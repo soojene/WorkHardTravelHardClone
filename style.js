@@ -16,27 +16,25 @@ export const styles = StyleSheet.create({
         flex: 1,
         backgroundColor:colors.bg,
     },
-    textDeco: {
-        color:"white",
-        fontSize:25,
-        fontWeight: "700"
-    },
     header: {
-        flex:1,
-        width:windowWidth,
+        // flex:1,
+        // width:windowWidth,
+        width:"100%",
         flexDirection:"row",
         justifyContent: "space-between",
-        alignItems: "flex-end",
+        alignItems: "center",
+        paddingTop:40,
         paddingHorizontal:20,
         paddingBottom: 8,
         backgroundColor:colors.header
     },
     inputContainer:{
-        flex:0.8,
-        width:windowWidth, 
+        // flex:0.8,
+        // width:windowWidth,
+        width:"100%", 
         justifyContent:"center",
         alignItems:"center",
-        paddingVertical:5,
+        paddingVertical:15,
         backgroundColor:colors.header
     },
     inputBox:{
@@ -48,12 +46,24 @@ export const styles = StyleSheet.create({
         borderRadius:20,
         backgroundColor:colors.inputBox
     },
-    mainBox:{
-        flex:8.2,
-        width:windowWidth,
-        justifyContent:"center",
-        alignItems: "center"
-    },
+    // mainBox:{
+    //     flex:8.2,
+    //     width:windowWidth,
+    //     justifyContent:"center",
+    //     alignItems: "center"
+    // },
+    // progressBarContainner:{
+    //     flex:0.02,
+    //     flexDirection:"row",
+    //     width:windowWidth*.8,
+    //     borderRadius:10,
+    //     marginTop:10,
+    //     backgroundColor:colors.disable
+    // },
+    // progressBarStatus:{
+    //     borderRadius:10,
+    //     backgroundColor:"#9690F0",
+    // },
     scrollBox:{
         // flex:1,
         width:"100%",
@@ -72,7 +82,6 @@ export const styles = StyleSheet.create({
     },
     listText:{
         fontSize:20,
-        color:colors.fontColor,
-        // textDecorationLine:"line-through"
+        color:colors.fontColor
     }
 });

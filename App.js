@@ -2,7 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontAwesome } from '@expo/vector-icons'; 
 import React, { useEffect, useState } from 'react';
-import {Text, View, TouchableOpacity, TextInput, ScrollView, Alert } from 'react-native';
+import {Text, View, TouchableOpacity, TextInput, ScrollView, Alert, Platform } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import { colors, styles } from './style';
 
@@ -16,9 +16,35 @@ export default function App() {
   const [check, setCheck] = useState(false);
   const [deletBtn, setDeletBtn] = useState(false);
 
+  const [workN, setWorkN] = useState(0);
+  const [workDoneN, setWorkDoneN] = useState(0);
+  const [travelN, setTravelN] = useState(0);
+  const [travelDoneN, setTravelDoneN] = useState(0);
+
+  // console.log(workDoneN);
   useEffect(() => {
     loadToDos();
   }, []);
+
+  useEffect(()=>{
+    let workTotal=0;
+    let travelTotal=0;
+    let workDone = 0;
+    let travelDone =0;
+    Object.keys(toDos).forEach(key=>{
+      toDos[key].menu? workTotal += 1:travelTotal +=1;
+      if(toDos[key].menu && toDos[key].check){
+        workDone +=1;
+      }else if(!toDos[key].menu&&toDos[key].check){
+        travelDone +=1;
+      };
+    }
+    );
+    setWorkN(workTotal);
+    setWorkDoneN(workDone);
+    setTravelN(travelTotal);
+    setTravelDoneN(travelDone);
+  }, [toDos]);
 
   const saveToDos = async (storageKey, toSave) => {
     try{
@@ -45,10 +71,12 @@ export default function App() {
   };
   const work = async()=> {
     setMenu(true);
+    setDeletBtn(false);
     await saveToDos(STORAGE_MENU, true);
   };
   const travel = async()=> {
     setMenu(false);
+    setDeletBtn(false);
     await saveToDos(STORAGE_MENU, false)
   };
   const onChangeText = (typedWord) =>{
@@ -64,19 +92,29 @@ export default function App() {
     setText("");
   };
   const deleteToDo = (key) => {
-    Alert.alert("목록 삭제", "목록을 삭제하시겠어요?", [
-      { text: "취소" },
-      {
-        text: "삭제",
-        style: "destructive",
-        onPress: () => {
-          const newToDos = { ...toDos };
-          delete newToDos[key];
-          setToDos(newToDos);
-          saveToDos(STORAGE_TODO, newToDos);
+    if(Platform.OS === "web"){
+      // const alertCheck = confirm("삭제 하시겠습니까?");
+      // if(alertCheck){
+        const newToDos = { ...toDos };
+        delete newToDos[key];
+        setToDos(newToDos);
+        saveToDos(STORAGE_TODO, newToDos);
+      // }
+    }else{
+      Alert.alert("목록 삭제", "목록을 삭제하시겠어요?", [
+        { text: "취소" },
+        {
+          text: "삭제",
+          style: "destructive",
+          onPress: () => {
+            const newToDos = { ...toDos };
+            delete newToDos[key];
+            setToDos(newToDos);
+            saveToDos(STORAGE_TODO, newToDos);
+          },
         },
-      },
-    ]);
+      ]);
+    }
   };
   const checkList = (key) => {
     let newToDos = {...toDos};
@@ -86,6 +124,7 @@ export default function App() {
       newToDos[key].check=true;
     }
     setToDos(newToDos);
+    saveToDos(STORAGE_TODO, newToDos);
   };
   const enableDeletBtn = () => {
     if(deletBtn){
@@ -94,21 +133,25 @@ export default function App() {
       setDeletBtn(true);
     }
   };
-
   return (
     <View style={styles.container}>
 
       <View style={styles.header}>
         <View style={{flexDirection:"row"}}>
           <TouchableOpacity style={{marginRight:25}} onPress={work}>
-            <Text style={{...styles.textDeco, color: menu? "white": colors.disable}}>WORK</Text>
+            <Text style={{
+        color:"white",
+        fontSize:25,
+        fontWeight: "700"
+    , color: menu? "white": colors.disable}}>WORK</Text>
           </TouchableOpacity>
-          {/* <Text style={{color:"white"}}>{menu? "true" : "false"}</Text> */}
           <TouchableOpacity onPress={travel}>
-            <Text style={{...styles.textDeco, color: !menu? "white": colors.disable}}>TRAVEL</Text>
+            <Text style={{color:"white",
+        fontSize:25,
+        fontWeight: "700", color: !menu? "white": colors.disable}}>TRAVEL</Text>
           </TouchableOpacity>
         </View>
-        <TouchableOpacity style={{paddingBottom:6}} onPress={()=>enableDeletBtn()}>
+        <TouchableOpacity style={{paddingBottom:0}} onPress={()=>enableDeletBtn()}>
           <AntDesign name="delete" size={deletBtn ? 25: 20} color={deletBtn ? "white": colors.disable} />
         </TouchableOpacity>
       </View>
@@ -116,21 +159,34 @@ export default function App() {
       <View style={styles.inputContainer}>
         <TextInput 
           style={styles.inputBox}
-          returnKeyType="done"
+          // returnKeyType="done"
           placeholderTextColor="darkgrey" 
           placeholder={menu? "... what to do":"... where you travel"}
           value={text}
           onChangeText={onChangeText}
           onSubmitEditing={inputSubmit}
+          blurOnSubmit={false}
           />
+  
       </View>
 
-      <View style={{...styles.mainBox, display: menu? "flex":"none"}}>
+      <View style={{width:"100%",
+        justifyContent:"center",
+        alignItems: "center", display: menu? "flex":"none"}}>
+        <View style={{ height:5,
+        flexDirection:"row",
+        width:"80%",
+        borderRadius:10,
+        marginTop:10,
+        backgroundColor:colors.disable, display:workN===0? "none":"flex"}}>
+          <View style={{borderRadius:10,
+        backgroundColor:"#9690F0", width:`${(workDoneN*100/workN)}%`}}></View>
+        </View>
         <ScrollView 
         style={styles.scrollBox}>
           {Object.keys(toDos).map((key) => (
             toDos[key].menu ? (<View key={key} style={styles.listBox}>
-                <Text style={{...styles.listText, textDecorationLine:toDos[key].check ? "line-through":"none"}}>{toDos[key].text}</Text>
+                <Text style={{...styles.listText, textDecorationLine:toDos[key].check ? "line-through":"none", color:toDos[key].check ? "grey":colors.fontColor, fontWeight:toDos[key].check ? "200" : "bold"}}>{toDos[key].text}</Text>
               <View style={{flexDirection:"row", alignItems:"center", justifyContent:"space-between"}}>
                 <TouchableOpacity style={{display:deletBtn? "flex" : "none" }} onPress={() => deleteToDo(key)}>
                   <AntDesign name="delete" size={20} color="darkgrey" />
@@ -144,12 +200,23 @@ export default function App() {
         </ScrollView>
       </View>
 
-      <View style={{...styles.mainBox, display: !menu? "flex":"none"}}>
+      <View style={{width:"100%",
+        justifyContent:"center",
+        alignItems: "center", display: !menu? "flex":"none"}}>
+      <View style={{height:5,
+        flexDirection:"row",
+        width:"80%",
+        borderRadius:10,
+        marginTop:10,
+        backgroundColor:colors.disable, display:travelN===0? "none":"flex"}}>
+          <View style={{borderRadius:10,
+        backgroundColor:"#9690F0", width:`${(travelDoneN*100/travelN)}%`}}></View>
+      </View>
       <ScrollView style={styles.scrollBox}>
         {Object.keys(toDos).map((key) => (
           !toDos[key].menu ? 
           (<View key={key} style={styles.listBox}>
-              <Text style={{...styles.listText, textDecorationLine:toDos[key].check ? "line-through":"none"}}>{toDos[key].text}</Text>
+              <Text style={{...styles.listText, textDecorationLine:toDos[key].check ? "line-through":"none", color:toDos[key].check ? "grey":colors.fontColor, fontWeight:toDos[key].check ? "200" : "bold"}}>{toDos[key].text}</Text>
               <View style={{flexDirection:"row", alignItems:"center", justifyContent:"space-between"}}>
                 <TouchableOpacity style={{display:deletBtn? "flex" : "none" }} onPress={() => deleteToDo(key)}>
                   <AntDesign name="delete" size={20} color="darkgrey" />
