@@ -57,14 +57,18 @@ export default function App() {
     try{
       const list = await AsyncStorage.getItem(STORAGE_TODO);
       const menuState = await AsyncStorage.getItem(STORAGE_MENU);
-      if(list === null){
+      console.log(list);
+      console.log(menuState);
+
+      if(!list){
         return;
       }
-      if(menu === undefined){
+      if(!menuState){
         setMenu(true);
+        return;
       }
       setToDos(JSON.parse(list));
-      setMenu(Boolean(JSON.parse(menuState)));
+      setMenu(JSON.parse(menuState));
     }catch(e){
       console.log(e);
     }
